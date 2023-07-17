@@ -1,0 +1,10 @@
+.idea/
+
+venv/
+env/
+
+**/migrations/
+
+*.log
+
+.vscode/
