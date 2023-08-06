@@ -13,6 +13,7 @@ from movie_app.models import Director, Movie, Review
 @api_view(['GET', 'POST'])
 def director_list_api_view(request):
     if request.method == "GET":
+        print(request.user)
         director = Director.objects.all()
         data = DirectorSerializer(instance=director, many=True).data
         return Response(data=data)
@@ -47,6 +48,7 @@ def director_detail_api_view(request, director_id):
 @api_view(['GET', 'POST'])
 def movie_list_api_view(request):
     if request.method == "GET":
+        print(request.user)
         movie = Movie.objects.all()
         data = MovierSerializer(instance=movie, many=True).data
         return Response(data=data)
@@ -89,6 +91,7 @@ def movie_detail_api_view(request, movies_id):
 @api_view(['GET', 'POST'])
 def review_list_api_view(request):
     if request.method == "GET":
+        print(request.user)
         review = Review.objects.all()
         serializer = ReviewSerializer(instance=review, many=True)
         total_reviews = Review.objects.count()
