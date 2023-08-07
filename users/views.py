@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate
 from .serializers import AuthorizationValidateSerializer, RegistrationValidateSerializer, ClientSerializer
 from django.contrib.auth.models import User
 from .models import Client
+from rest_framework.views import APIView
 
 
 @api_view(['POST'])
@@ -29,18 +30,18 @@ def registration_api_view(request):
     return Response(status=201, data=response_data)
 
 
-@api_view(['POST'])
-def authorization_api_view(request):
-    serializer = AuthorizationValidateSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
+class AthorizationAPIView(APIView):
+    def post(self, request):
+        serializer = AuthorizationValidateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-    username = serializer.validated_data.get('username')
-    password = serializer.validated_data.get('password')
-    code = serializer.validated_data.get('code')
-    user = authenticate(username=username, password=password, is_active=False)
+        username = serializer.validated_data.get('username')
+        password = serializer.validated_data.get('password')
+        code = serializer.validated_data.get('code')
+        user = authenticate(username=username, password=password, is_active=False)
 
-    if user is not None and user.client.code == code:
-        token_, created = Token.objects.get_or_create(user=user)
-        return Response(data={'key': token_.key})
+        if user is not None and user.client.code == code:
+            token_, created = Token.objects.get_or_create(user=user)
+            return Response(data={'key': token_.key})
 
-    return Response(status=401, data={'message': 'Invalid credentials or code'})
+        return Response(status=401, data={'message': 'Invalid credentials or code'})

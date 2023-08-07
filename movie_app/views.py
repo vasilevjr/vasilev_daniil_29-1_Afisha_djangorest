@@ -2,12 +2,76 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Sum
-
-from movie_app.serializers import DirectorSerializer, MovierSerializer, ReviewSerializer, DirectorValidateSerializer, \
-    MovieValidateSerializer, ReviewValidateSerializer
-
-
 from movie_app.models import Director, Movie, Review
+from movie_app.serializers import (DirectorSerializer, MovierSerializer, ReviewSerializer, DirectorValidateSerializer,
+                                   MovieValidateSerializer, ReviewValidateSerializer)
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+
+
+class DirectorListCreateAPIView(ListCreateAPIView):
+    queryset = Director.objects.all()
+    serializer_class = DirectorSerializer
+    pagination_class = PageNumberPagination
+
+    def create(self, request, *args, **kwargs):
+        if request.method == "GET":
+            print(request.user)
+            director = Director.objects.all()
+            data = DirectorSerializer(instance=director, many=True).data
+            return Response(data=data)
+        elif request.method == "POST":
+            serializer = DirectorValidateSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(status=400, data=serializer.errors)
+            name = serializer.validated_data.get('name')
+            director = Director.objects.create(name=name)
+            director.save()
+            return Response(data=DirectorSerializer(director).data)
+
+class MovieListCreateAPIView(ListCreateAPIView):
+    queryset = Movie.objects.all()
+    serializer_class = MovierSerializer
+    pagination_class = PageNumberPagination
+
+    def create(self, request, *args, **kwargs):
+        if request.method == "GET":
+            print(request.user)
+            movie = Movie.objects.all()
+            data = MovierSerializer(instance=movie, many=True).data
+            return Response(data=data)
+        elif request.method == "POST":
+            serializer = MovieValidateSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(status=400, data=serializer.errors)
+            title = serializer.validated_data.get('title')
+            description = serializer.validated_data.get('description')
+            duration = serializer.validated_data.get('duration')
+            director_id = serializer.validated_data.get('director_id')
+            movie = Movie.objects.create(
+                title=title, description=description,
+                director_id=director_id, duration=duration
+            )
+            movie.save()
+            return Response(data=MovierSerializer(movie).data)
+
+
+class ReviewModelViewSet(ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    pagination_class = PageNumberPagination
+    lookup_field = 'id'
+
+
+#class MovieModelViewSet(ModelViewSet):
+    #queryset = Movie.objects.all()
+    #serializer_class = MovierSerializer
+    #pagination_class = PageNumberPagination
+    #lookup_field = 'id'
+
+
+
 
 
 @api_view(['GET', 'POST'])
